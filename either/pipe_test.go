@@ -1,6 +1,8 @@
 package either
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/samber/mo"
@@ -130,4 +132,26 @@ func TestPipe10(t *testing.T) {
 	r, ok := out.Right()
 	is.True(ok)
 	is.Equal("x", r)
+}
+
+func TestPipeTypeTransformations(t *testing.T) {
+	is := assert.New(t)
+
+	out := Pipe3(
+		mo.Left[string, error]("42"),
+		FlatMapLeft(func(str string) mo.Either[int, error] {
+			v, err := strconv.Atoi(str)
+			if err != nil {
+				mo.Right[int](err)
+			}
+			return mo.Left[int, error](v)
+		}),
+		MapLeft[int, error](func(n int) float64 {
+			return float64(n)
+		}),
+		MapLeft[float64, error](func(n float64) string {
+			return fmt.Sprintf("%.2f", n)
+		}),
+	)
+	is.Equal(mo.Left[string, error]("42.00"), out)
 }

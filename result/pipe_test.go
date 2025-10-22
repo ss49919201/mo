@@ -2,6 +2,8 @@ package result
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/samber/mo"
@@ -104,4 +106,22 @@ func TestPipe3Identity(t *testing.T) {
 	v, err := out.Get()
 	is.NoError(err)
 	is.Equal("v", v)
+}
+
+func TestPipeTypeTransformations(t *testing.T) {
+	is := assert.New(t)
+
+	out := Pipe3(
+		mo.Ok("42"),
+		FlatMap(func(str string) mo.Result[int] {
+			return mo.TupleToResult(strconv.Atoi(str))
+		}),
+		Map(func(n int) float64 {
+			return float64(n)
+		}),
+		Map(func(n float64) string {
+			return fmt.Sprintf("%.2f", n)
+		}),
+	)
+	is.Equal(mo.Ok("42.00"), out)
 }

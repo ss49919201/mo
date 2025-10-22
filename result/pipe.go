@@ -1,12 +1,7 @@
 package result
 
 import (
-	"fmt"
-	"strconv"
-	"testing"
-
 	"github.com/samber/mo"
-	"github.com/stretchr/testify/assert"
 )
 
 func Pipe1[A any, B any](
@@ -216,22 +211,4 @@ func Pipe10[A any, B any, C any, D any, E any, F any, G any, H any, I any, J any
 			),
 		),
 	)
-}
-
-func TestPipeTypeTransformations(t *testing.T) {
-	is := assert.New(t)
-
-	out := Pipe3(
-		mo.Ok("42"),
-		FlatMap(func(str string) mo.Result[int] {
-			return mo.TupleToResult(strconv.Atoi(str))
-		}),
-		Map(func(n int) float64 {
-			return float64(n)
-		}),
-		Map(func(n float64) string {
-			return fmt.Sprintf("%.2f", n)
-		}),
-	)
-	is.Equal(mo.Ok("42.00"), out)
 }
